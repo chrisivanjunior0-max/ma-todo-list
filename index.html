@@ -1,0 +1,180 @@
+ <!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List Gold Edition</title>
+    <style>
+        :root {
+            --bg-body: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            --bg-container: white;
+            --text-color: #333;
+            --task-bg: #fdfdfd;
+        }
+
+        body.dark-mode {
+            --bg-body: #121212;
+            --bg-container: #1e1e1e;
+            --text-color: #f0f0f0;
+            --task-bg: #2d2d2d;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--bg-body);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: var(--text-color);
+            transition: 0.4s;
+        }
+
+        .container {
+            background: var(--bg-container);
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 450px;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+        }
+
+        .dark-mode-toggle { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 20px; cursor: pointer; }
+
+        .input-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        .row { display: flex; gap: 10px; }
+
+        input[type="text"], select {
+            padding: 12px;
+            border: 2px solid #eee;
+            border-radius: 10px;
+            outline: none;
+            background: var(--task-bg);
+            color: var(--text-color);
+        }
+
+        .btn-add {
+            background: #1e3c72; color: white; border: none;
+            padding: 10px; border-radius: 10px; cursor: pointer; font-weight: bold;
+            transition: 0.3s;
+        }
+        body.dark-mode .btn-add { background: #bb86fc; color: black; }
+
+        /* BADGES */
+        .badge { font-size: 10px; padding: 3px 8px; border-radius: 20px; color: white; margin-right: 10px; font-weight: bold; }
+        .cat-travail { background: #e67e22; }
+        .cat-loisir { background: #9b59b6; }
+        .cat-perso { background: #3498db; }
+
+        /* LISTE */
+        ul { list-style: none; padding: 0; display: flex; flex-direction: column; }
+        
+        li {
+            background: var(--task-bg);
+            margin-bottom: 10px;
+            padding: 12px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.5s ease; /* Animation pour le déplacement */
+        }
+
+        .check-box { width: 20px; height: 20px; border: 2px solid #1e3c72; border-radius: 5px; margin-right: 10px; cursor: pointer; }
+        body.dark-mode .check-box { border-color: #bb86fc; }
+        
+        .completed { opacity: 0.5; order: 1; /* Le tri magique en CSS */ }
+        .completed .check-box { background: #2ecc71; border-color: #2ecc71; }
+        .completed .task-text { text-decoration: line-through; }
+        
+        .task-text { flex: 1; }
+        .btn-delete { background: #ff4757; color: white; border: none; padding: 5px 10px; border-radius: 8px; cursor: pointer; }
+    </style>
+</head>
+<body id="monBody">
+
+    <div class="container">
+        <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌓</button>
+        <h2>Mes Objectifs</h2>
+        
+        <div class="input-group">
+            <input type="text" id="taskInput" placeholder="Nouvelle tâche...">
+            <div class="row">
+                <select id="categoryInput">
+                    <option value="perso">Personnel</option>
+                    <option value="travail">Travail</option>
+                    <option value="loisir">Loisir</option>
+                </select>
+                <button class="btn-add" style="flex:1" onclick="ajouterTache()">Ajouter</button>
+            </div>
+        </div>
+        
+        <ul id="taskList"></ul>
+    </div>
+
+    <script>
+        const input = document.getElementById("taskInput");
+        const categoryInput = document.getElementById("categoryInput");
+        const list = document.getElementById("taskList");
+        const body = document.getElementById("monBody");
+
+        function toggleDarkMode() {
+            body.classList.toggle("dark-mode");
+            localStorage.setItem("themeSombre", body.classList.contains("dark-mode"));
+        }
+
+        window.onload = function() {
+            if (localStorage.getItem("themeSombre") === "true") body.classList.add("dark-mode");
+            const sauv = JSON.parse(localStorage.getItem("mesTachesGold")) || [];
+            sauv.forEach(t => creerElement(t.texte, t.fini, t.categorie));
+        };
+
+        function ajouterTache() {
+            const texte = input.value.trim();
+            const categorie = categoryInput.value;
+            if (texte === "") return;
+            creerElement(texte, false, categorie);
+            input.value = "";
+            sauvegarder();
+        }
+
+        function creerElement(texte, fini, categorie) {
+            const li = document.createElement("li");
+            if (fini) li.classList.add("completed");
+            
+            const noms = { perso: 'Perso', travail: 'Travail', loisir: 'Loisir' };
+
+            li.innerHTML = `
+                <div class="check-box" onclick="toggleTache(this)"></div>
+                <span class="badge cat-${categorie}">${noms[categorie]}</span>
+                <span class="task-text" onclick="toggleTache(this)">${texte}</span>
+                <button class="btn-delete" onclick="supprimerTache(this)">X</button>
+            `;
+            list.appendChild(li);
+        }
+
+        function toggleTache(el) { 
+            el.closest("li").classList.toggle("completed"); 
+            sauvegarder(); 
+        }
+
+        function supprimerTache(btn) { btn.parentElement.remove(); sauvegarder(); }
+
+        function sauvegarder() {
+            const taches = [];
+            document.querySelectorAll("li").forEach(li => {
+                const badge = li.querySelector(".badge");
+                const cat = badge.className.split(' ').find(c => c.startsWith('cat-')).replace('cat-', '');
+                taches.push({
+                    texte: li.querySelector(".task-text").innerText,
+                    fini: li.classList.contains("completed"),
+                    categorie: cat
+                });
+            });
+            localStorage.setItem("mesTachesGold", JSON.stringify(taches));
+        }
+    </script>
+</body>
+</html>
