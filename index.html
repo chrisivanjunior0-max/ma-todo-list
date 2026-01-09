@@ -1,0 +1,58 @@
+ <!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ma To-Do List</title>
+    
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #eef2f3; display: flex; justify-content: center; padding: 50px; }
+        .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); width: 350px; }
+        h1 { font-size: 1.8rem; color: #2c3e50; text-align: center; }
+        .input-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        input { flex: 1; padding: 10px; border: 2px solid #ddd; border-radius: 5px; outline: none; }
+        input:focus { border-color: #3498db; }
+        button#addBtn { padding: 10px; background: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        ul { list-style: none; padding: 0; }
+        li { background: #f9f9f9; margin-bottom: 8px; padding: 12px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #3498db; }
+        .delete-btn { background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Ma Liste de Tâches</h1>
+        <div class="input-group">
+            <input type="text" id="taskInput" placeholder="Quelle est la tâche ?">
+            <button id="addBtn" onclick="addTask()">Ajouter</button>
+        </div>
+        <ul id="taskList"></ul>
+    </div>
+
+    <script>
+        function addTask() {
+            const input = document.getElementById('taskInput');
+            const ul = document.getElementById('taskList');
+            
+            if (input.value.trim() !== "") {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span>${input.value}</span>
+                    <button class="delete-btn" onclick="this.parentElement.remove()">Supprimer</button>
+                `;
+                ul.appendChild(li);
+                input.value = ""; // Vide le champ après l'ajout
+            } else {
+                alert("Écris quelque chose d'abord !");
+            }
+        }
+
+        // Permet d'ajouter une tâche en appuyant sur "Entrée"
+        document.getElementById('taskInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                addTask();
+            }
+        });
+    </script>
+</body>
+</html>
